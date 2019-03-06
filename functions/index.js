@@ -6,12 +6,7 @@ const os = require('os');
 const fs = require('fs');
 
 const admin = require('firebase-admin');
-const serviceAccount = require('./service-account.json');
-
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: 'https://wedding-47b6b.firebaseio.com',
-});
+admin.initializeApp();
 
 const mkdirSync = function(dirPath) {
     try {
@@ -146,7 +141,7 @@ exports.addAboutImages = functions
             return null;
         }
 
-        const [_, size, name] = fileName.split('_');
+        const [_, name, size] = fileName.split('_');
         const fileBucket = object.bucket; // The Storage bucket that contains the file.
         const storage = new Storage();
         const bucket = storage.bucket(fileBucket);
