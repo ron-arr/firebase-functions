@@ -4,6 +4,7 @@ const spawn = require('child-process-promise').spawn;
 const path = require('path');
 const os = require('os');
 const fs = require('fs');
+const sizeOf = require('image-size');
 
 const admin = require('firebase-admin');
 admin.initializeApp();
@@ -89,9 +90,10 @@ exports.generateThumbnails = functions
                 return spawn('convert', [tempFilePath, '-thumbnail', '1000x1000>', destThumbFilePath]);
             })
             .then(() => {
-                console.log('Thumbnail created at', destThumbFilePath);
                 // We add a 'thumb_' prefix to thumbnails file name. That's where we'll upload the thumbnail.
-                const thumbFileName = `thumb_${thumbName}_1000x1000`;
+                const sizes = sizeOf(destThumbFilePath);
+                console.log('Thumbnail created at', destThumbFilePath, sizes.width, sizes.height);
+                const thumbFileName = `thumb_${thumbName}_${sizes.width}x${sizes.height}_src`;
                 const thumbFilePath = path.join(path.dirname(filePath), 'thumbs', thumbFileName);
                 // Uploading the thumbnail.
                 return bucket.upload(destThumbFilePath, {
@@ -106,9 +108,9 @@ exports.generateThumbnails = functions
                 return spawn('convert', [tempFilePath, '-thumbnail', '200x200>', destThumbFilePath]);
             })
             .then(() => {
-                console.log('Thumbnail created at', destThumbFilePath);
-                // We add a 'thumb_' prefix to thumbnails file name. That's where we'll upload the thumbnail.
-                const thumbFileName = `thumb_${thumbName}_200x200`;
+                const sizes = sizeOf(destThumbFilePath);
+                console.log('Thumbnail created at', destThumbFilePath, sizes.width, sizes.height);
+                const thumbFileName = `thumb_${thumbName}_${sizes.width}x${sizes.height}_thumb`;
                 const thumbFilePath = path.join(path.dirname(filePath), 'thumbs', thumbFileName);
                 // Uploading the thumbnail.
                 return bucket.upload(destThumbFilePath, {
@@ -141,7 +143,8 @@ exports.addAboutImages = functions
             return null;
         }
 
-        const [_, name, size] = fileName.split('_');
+        const [_, name, size, variant] = fileName.split('_');
+        const [width, height] = size.split('x');
         const fileBucket = object.bucket; // The Storage bucket that contains the file.
         const storage = new Storage();
         const bucket = storage.bucket(fileBucket);
@@ -157,7 +160,7 @@ exports.addAboutImages = functions
                     .database()
                     .ref('about/images')
                     .child(name)
-                    .child(`_${size}`)
-                    .set(url);
+                    .child(variant)
+                    .set({ url, width, height });
             });
     });
