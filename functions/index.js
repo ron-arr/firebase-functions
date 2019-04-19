@@ -11,8 +11,10 @@ const aboutImages = require('./wedding/aboutImages');
 const generateThumbnails = require('./wedding/generateThumbnails');
 const addUser = require('./wedding/addUser');
 const weddingPhotos = require('./wedding/weddingPhotos');
+const weddingPhotosBanket = require('./wedding/weddingPhotosBanket');
 
 exports.addUser = addUser.handler;
 exports.generateThumbnails = generateThumbnails.handler;
 exports.addAboutImages = aboutImages.handler;
 exports.addWeddingPhotos = weddingPhotos.handler;
+exports.addWeddingPhotosBanket = weddingPhotosBanket.handler;
